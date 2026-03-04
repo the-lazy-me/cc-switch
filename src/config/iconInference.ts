@@ -25,6 +25,9 @@ const iconMappings = {
   cohere: { icon: "cohere", iconColor: "#39594D" },
   perplexity: { icon: "perplexity", iconColor: "#20808D" },
   huggingface: { icon: "huggingface", iconColor: "#FFD21E" },
+  qihan: { icon: "qihanai", iconColor: "#2B98C9" },
+  qhaigc: { icon: "qihanai", iconColor: "#2B98C9" },
+  启航: { icon: "qihanai", iconColor: "#2B98C9" },
 
   // 云平台
   aws: { icon: "aws", iconColor: "#FF9900" },

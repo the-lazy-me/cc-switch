@@ -21,10 +21,8 @@ vi.mock("@/components/providers/ProviderList", () => ({
     currentProviderId,
     onSwitch,
     onEdit,
-    onDuplicate,
     onConfigureUsage,
     onOpenWebsite,
-    onCreate,
   }: any) => (
     <div>
       <div data-testid="provider-list">{JSON.stringify(providers)}</div>
@@ -33,39 +31,19 @@ vi.mock("@/components/providers/ProviderList", () => ({
         switch
       </button>
       <button onClick={() => onEdit(providers[currentProviderId])}>edit</button>
-      <button onClick={() => onDuplicate(providers[currentProviderId])}>
-        duplicate
-      </button>
       <button onClick={() => onConfigureUsage(providers[currentProviderId])}>
         usage
       </button>
       <button onClick={() => onOpenWebsite("https://example.com")}>
         open-website
       </button>
-      <button onClick={() => onCreate?.()}>create</button>
     </div>
   ),
 }));
 
-vi.mock("@/components/providers/AddProviderDialog", () => ({
-  AddProviderDialog: ({ open, onOpenChange, onSubmit, appId }: any) =>
-    open ? (
-      <div data-testid="add-provider-dialog">
-        <button
-          onClick={() =>
-            onSubmit({
-              name: `New ${appId} Provider`,
-              settingsConfig: {},
-              category: "custom",
-              sortIndex: 99,
-            })
-          }
-        >
-          confirm-add
-        </button>
-        <button onClick={() => onOpenChange(false)}>close-add</button>
-      </div>
-    ) : null,
+vi.mock("@/components/providers/FirstRunSetupDialog", () => ({
+  FirstRunSetupDialog: ({ open }: any) =>
+    open ? <div data-testid="first-run-dialog" /> : null,
 }));
 
 vi.mock("@/components/providers/EditProviderDialog", () => ({
@@ -175,15 +153,6 @@ describe("App integration with MSW", () => {
     fireEvent.click(screen.getByText("save-script"));
     fireEvent.click(screen.getByText("close-usage"));
 
-    fireEvent.click(screen.getByText("create"));
-    expect(screen.getByTestId("add-provider-dialog")).toBeInTheDocument();
-    fireEvent.click(screen.getByText("confirm-add"));
-    await waitFor(() =>
-      expect(screen.getByTestId("provider-list").textContent).toMatch(
-        /New codex Provider/,
-      ),
-    );
-
     fireEvent.click(screen.getByText("edit"));
     expect(screen.getByTestId("edit-provider-dialog")).toBeInTheDocument();
     fireEvent.click(screen.getByText("confirm-edit"));
@@ -194,10 +163,6 @@ describe("App integration with MSW", () => {
     );
 
     fireEvent.click(screen.getByText("switch"));
-    fireEvent.click(screen.getByText("duplicate"));
-    await waitFor(() =>
-      expect(screen.getByTestId("provider-list").textContent).toMatch(/copy/),
-    );
 
     fireEvent.click(screen.getByText("open-website"));
 

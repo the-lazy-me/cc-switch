@@ -218,10 +218,10 @@ pub struct ProviderMeta {
     /// 计费模式来源（response/request）
     #[serde(rename = "pricingModelSource", skip_serializing_if = "Option::is_none")]
     pub pricing_model_source: Option<String>,
-    /// 每日消费限额（USD）
+    /// 每日消费限额（CNY）
     #[serde(rename = "limitDailyUsd", skip_serializing_if = "Option::is_none")]
     pub limit_daily_usd: Option<String>,
-    /// 每月消费限额（USD）
+    /// 每月消费限额（CNY）
     #[serde(rename = "limitMonthlyUsd", skip_serializing_if = "Option::is_none")]
     pub limit_monthly_usd: Option<String>,
     /// 供应商单独的模型测试配置

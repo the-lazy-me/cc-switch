@@ -1,7 +1,6 @@
 import {
   BarChart3,
   Check,
-  Copy,
   Edit,
   // Loader2, // Hidden: stream check feature disabled
   Minus,
@@ -26,7 +25,6 @@ interface ProviderActionsProps {
   isOmo?: boolean;
   onSwitch: () => void;
   onEdit: () => void;
-  onDuplicate: () => void;
   onTest?: () => void;
   onConfigureUsage: () => void;
   onDelete: () => void;
@@ -50,7 +48,6 @@ export function ProviderActions({
   isOmo = false,
   onSwitch,
   onEdit,
-  onDuplicate,
   onTest: _onTest, // Hidden: stream check feature disabled
   onConfigureUsage,
   onDelete,
@@ -234,16 +231,6 @@ export function ProviderActions({
           className={iconButtonClass}
         >
           <Edit className="h-4 w-4" />
-        </Button>
-
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={onDuplicate}
-          title={t("provider.duplicate")}
-          className={iconButtonClass}
-        >
-          <Copy className="h-4 w-4" />
         </Button>
 
         {/* Hidden: stream check feature disabled

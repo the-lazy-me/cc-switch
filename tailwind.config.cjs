@@ -39,9 +39,9 @@ module.exports = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         blue: {
-          400: "#409CFF",
-          500: "#0A84FF",
-          600: "#0060DF",
+          400: "#60A5FA",
+          500: "#3B82F6",
+          600: "#2563EB",
         },
         gray: {
           50: "#fafafa",

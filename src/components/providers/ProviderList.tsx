@@ -52,11 +52,9 @@ interface ProviderListProps {
   onRemoveFromConfig?: (provider: Provider) => void;
   onDisableOmo?: () => void;
   onDisableOmoSlim?: () => void;
-  onDuplicate: (provider: Provider) => void;
   onConfigureUsage?: (provider: Provider) => void;
   onOpenWebsite: (url: string) => void;
   onOpenTerminal?: (provider: Provider) => void;
-  onCreate?: () => void;
   isLoading?: boolean;
   isProxyRunning?: boolean; // 代理服务运行状态
   isProxyTakeover?: boolean; // 代理接管模式（Live配置已被接管）
@@ -74,11 +72,9 @@ export function ProviderList({
   onRemoveFromConfig,
   onDisableOmo,
   onDisableOmoSlim,
-  onDuplicate,
   onConfigureUsage,
   onOpenWebsite,
   onOpenTerminal,
-  onCreate,
   isLoading = false,
   isProxyRunning = false,
   isProxyTakeover = false,
@@ -258,7 +254,6 @@ export function ProviderList({
   if (sortedProviders.length === 0) {
     return (
       <ProviderEmptyState
-        onCreate={onCreate}
         onImport={() => importMutation.mutate()}
       />
     );
@@ -302,7 +297,6 @@ export function ProviderList({
                 onRemoveFromConfig={onRemoveFromConfig}
                 onDisableOmo={onDisableOmo}
                 onDisableOmoSlim={onDisableOmoSlim}
-                onDuplicate={onDuplicate}
                 onConfigureUsage={onConfigureUsage}
                 onOpenWebsite={onOpenWebsite}
                 onOpenTerminal={onOpenTerminal}
@@ -421,7 +415,6 @@ interface SortableProviderCardProps {
   onRemoveFromConfig?: (provider: Provider) => void;
   onDisableOmo?: () => void;
   onDisableOmoSlim?: () => void;
-  onDuplicate: (provider: Provider) => void;
   onConfigureUsage?: (provider: Provider) => void;
   onOpenWebsite: (url: string) => void;
   onOpenTerminal?: (provider: Provider) => void;
@@ -452,7 +445,6 @@ function SortableProviderCard({
   onRemoveFromConfig,
   onDisableOmo,
   onDisableOmoSlim,
-  onDuplicate,
   onConfigureUsage,
   onOpenWebsite,
   onOpenTerminal,
@@ -497,7 +489,6 @@ function SortableProviderCard({
         onRemoveFromConfig={onRemoveFromConfig}
         onDisableOmo={onDisableOmo}
         onDisableOmoSlim={onDisableOmoSlim}
-        onDuplicate={onDuplicate}
         onConfigureUsage={
           onConfigureUsage ? (item) => onConfigureUsage(item) : () => undefined
         }

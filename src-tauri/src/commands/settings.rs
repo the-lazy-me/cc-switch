@@ -1,6 +1,12 @@
 #![allow(non_snake_case)]
 
 use tauri::AppHandle;
+use tauri::State;
+
+use crate::app_config::AppType;
+use crate::error::AppError;
+use crate::settings::VisibleApps;
+use crate::store::AppState;
 
 fn merge_settings_for_save(
     mut incoming: crate::settings::AppSettings,
@@ -12,6 +18,79 @@ fn merge_settings_for_save(
     incoming
 }
 
+#[derive(Clone)]
+enum TakeoverTransition {
+    Enable(AppType),
+    Disable(AppType),
+}
+
+fn collect_takeover_transitions(
+    old_flags: &VisibleApps,
+    new_flags: &VisibleApps,
+) -> Vec<TakeoverTransition> {
+    let mut transitions = Vec::new();
+
+    // Disable first: restore user original config as early as possible.
+    for app in AppType::all() {
+        if old_flags.is_visible(&app) && !new_flags.is_visible(&app) {
+            transitions.push(TakeoverTransition::Disable(app));
+        }
+    }
+
+    // Enable after disable.
+    for app in AppType::all() {
+        if !old_flags.is_visible(&app) && new_flags.is_visible(&app) {
+            transitions.push(TakeoverTransition::Enable(app));
+        }
+    }
+
+    transitions
+}
+
+fn apply_takeover_transition(state: &AppState, transition: &TakeoverTransition) -> Result<(), AppError> {
+    match transition {
+        TakeoverTransition::Enable(app) => {
+            crate::services::takeover::apply_current_provider_to_live(state, app)
+        }
+        TakeoverTransition::Disable(app) => {
+            let _ = crate::services::takeover::restore_original_config_for_app(app)?;
+            Ok(())
+        }
+    }
+}
+
+fn rollback_takeover_transition(state: &AppState, transition: &TakeoverTransition) {
+    let inverse = match transition {
+        TakeoverTransition::Enable(app) => TakeoverTransition::Disable(app.clone()),
+        TakeoverTransition::Disable(app) => TakeoverTransition::Enable(app.clone()),
+    };
+
+    if let Err(err) = apply_takeover_transition(state, &inverse) {
+        log::warn!("Rollback takeover transition failed: {err}");
+    }
+}
+
+fn apply_takeover_transitions(
+    state: &AppState,
+    old_flags: &VisibleApps,
+    new_flags: &VisibleApps,
+) -> Result<(), AppError> {
+    let transitions = collect_takeover_transitions(old_flags, new_flags);
+    let mut applied: Vec<TakeoverTransition> = Vec::new();
+
+    for transition in transitions {
+        if let Err(err) = apply_takeover_transition(state, &transition) {
+            for previous in applied.iter().rev() {
+                rollback_takeover_transition(state, previous);
+            }
+            return Err(err);
+        }
+        applied.push(transition);
+    }
+
+    Ok(())
+}
+
 /// 获取设置
 #[tauri::command]
 pub async fn get_settings() -> Result<crate::settings::AppSettings, String> {
@@ -20,10 +99,25 @@ pub async fn get_settings() -> Result<crate::settings::AppSettings, String> {
 
 /// 保存设置
 #[tauri::command]
-pub async fn save_settings(settings: crate::settings::AppSettings) -> Result<bool, String> {
+pub async fn save_settings(
+    state: State<'_, AppState>,
+    settings: crate::settings::AppSettings,
+) -> Result<bool, String> {
     let existing = crate::settings::get_settings();
     let merged = merge_settings_for_save(settings, &existing);
-    crate::settings::update_settings(merged).map_err(|e| e.to_string())?;
+
+    let old_takeover = existing.takeover_apps.clone();
+    let new_takeover = merged.takeover_apps.clone();
+
+    crate::settings::update_settings(merged)
+        .map_err(|e| format!("保存设置失败: {e}"))?;
+
+    if let Err(err) = apply_takeover_transitions(state.inner(), &old_takeover, &new_takeover) {
+        let rollback_settings = existing.clone();
+        let _ = crate::settings::update_settings(rollback_settings);
+        return Err(format!("应用客户端接管开关失败: {err}"));
+    }
+
     Ok(true)
 }
 

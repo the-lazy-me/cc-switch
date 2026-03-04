@@ -37,7 +37,6 @@ interface ProviderCardProps {
   onDisableOmoSlim?: () => void;
   onConfigureUsage: (provider: Provider) => void;
   onOpenWebsite: (url: string) => void;
-  onDuplicate: (provider: Provider) => void;
   onTest?: (provider: Provider) => void;
   onOpenTerminal?: (provider: Provider) => void;
   isTesting?: boolean;
@@ -101,7 +100,6 @@ export function ProviderCard({
   onDisableOmoSlim,
   onConfigureUsage,
   onOpenWebsite,
-  onDuplicate,
   onTest,
   onOpenTerminal,
   isTesting,
@@ -132,6 +130,27 @@ export function ProviderCard({
   const displayUrl = useMemo(() => {
     return extractApiUrl(provider, fallbackUrlText);
   }, [provider, fallbackUrlText]);
+
+  // 兼容历史数据：启航 AI 的旧记录曾使用 generic 图标，按名称/域名回退为 qihanai
+  const providerIcon = useMemo(() => {
+    const currentIcon = provider.icon || "generic";
+    if (currentIcon !== "generic") {
+      return currentIcon;
+    }
+    const idLower = provider.id.toLowerCase();
+    const nameLower = provider.name.toLowerCase();
+    const websiteLower = (provider.websiteUrl || "").toLowerCase();
+    const isQihan =
+      idLower.includes("qihan") ||
+      nameLower.includes("启航") ||
+      nameLower.includes("qihan") ||
+      websiteLower.includes("qhaigc.net");
+    return isQihan ? "qihanai" : currentIcon;
+  }, [provider.icon, provider.id, provider.name, provider.websiteUrl]);
+
+  const providerIconColor = providerIcon === "qihanai"
+    ? undefined
+    : provider.iconColor;
 
   const isClickableUrl = useMemo(() => {
     if (provider.notes?.trim()) {
@@ -252,9 +271,9 @@ export function ProviderCard({
 
           <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center border border-border group-hover:scale-105 transition-transform duration-300">
             <ProviderIcon
-              icon={provider.icon}
+              icon={providerIcon}
               name={provider.name}
-              color={provider.iconColor}
+              color={providerIconColor}
               size={20}
             />
           </div>
@@ -387,7 +406,6 @@ export function ProviderCard({
               isOmo={isAnyOmo}
               onSwitch={() => onSwitch(provider)}
               onEdit={() => onEdit(provider)}
-              onDuplicate={() => onDuplicate(provider)}
               onTest={onTest ? () => onTest(provider) : undefined}
               onConfigureUsage={() => onConfigureUsage(provider)}
               onDelete={() => onDelete(provider)}

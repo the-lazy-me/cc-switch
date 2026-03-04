@@ -151,7 +151,6 @@ describe("ProviderList Component", () => {
         onSwitch={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
-        onDuplicate={vi.fn()}
         onOpenWebsite={vi.fn()}
         isLoading
       />,
@@ -163,8 +162,7 @@ describe("ProviderList Component", () => {
     expect(placeholders).toHaveLength(3);
   });
 
-  it("should show empty state and trigger create callback when no providers exist", () => {
-    const handleCreate = vi.fn();
+  it("should show empty state when no providers exist", () => {
     useDragSortMock.mockReturnValueOnce({
       sortedProviders: [],
       sensors: [],
@@ -179,18 +177,14 @@ describe("ProviderList Component", () => {
         onSwitch={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
-        onDuplicate={vi.fn()}
         onOpenWebsite={vi.fn()}
-        onCreate={handleCreate}
       />,
     );
 
-    const addButton = screen.getByRole("button", {
-      name: "provider.addProvider",
-    });
-    fireEvent.click(addButton);
-
-    expect(handleCreate).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("provider.noProviders")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "provider.addProvider" }),
+    ).not.toBeInTheDocument();
   });
 
   it("should render in order returned by useDragSort and pass through action callbacks", () => {
@@ -200,7 +194,6 @@ describe("ProviderList Component", () => {
     const handleSwitch = vi.fn();
     const handleEdit = vi.fn();
     const handleDelete = vi.fn();
-    const handleDuplicate = vi.fn();
     const handleUsage = vi.fn();
     const handleOpenWebsite = vi.fn();
 
@@ -218,7 +211,6 @@ describe("ProviderList Component", () => {
         onSwitch={handleSwitch}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onDuplicate={handleDuplicate}
         onConfigureUsage={handleUsage}
         onOpenWebsite={handleOpenWebsite}
       />,
@@ -247,13 +239,11 @@ describe("ProviderList Component", () => {
     // Trigger action buttons
     fireEvent.click(screen.getByTestId("switch-b"));
     fireEvent.click(screen.getByTestId("edit-b"));
-    fireEvent.click(screen.getByTestId("duplicate-b"));
     fireEvent.click(screen.getByTestId("usage-b"));
     fireEvent.click(screen.getByTestId("delete-a"));
 
     expect(handleSwitch).toHaveBeenCalledWith(providerB);
     expect(handleEdit).toHaveBeenCalledWith(providerB);
-    expect(handleDuplicate).toHaveBeenCalledWith(providerB);
     expect(handleUsage).toHaveBeenCalledWith(providerB);
     expect(handleDelete).toHaveBeenCalledWith(providerA);
 
@@ -282,7 +272,6 @@ describe("ProviderList Component", () => {
         onSwitch={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
-        onDuplicate={vi.fn()}
         onOpenWebsite={vi.fn()}
       />,
     );

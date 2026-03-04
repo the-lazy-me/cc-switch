@@ -5,8 +5,8 @@ import {
   OPENCODE_PRESET_MODEL_VARIANTS,
 } from "@/config/opencodeProviderPresets";
 
-describe("AWS Bedrock OpenCode Provider Presets", () => {
-  it("should include @ai-sdk/amazon-bedrock in npm packages", () => {
+describe("OpenCode Provider Presets", () => {
+  it("should include @ai-sdk/amazon-bedrock in npm packages list", () => {
     const bedrockPkg = opencodeNpmPackages.find(
       (p) => p.value === "@ai-sdk/amazon-bedrock",
     );
@@ -14,7 +14,7 @@ describe("AWS Bedrock OpenCode Provider Presets", () => {
     expect(bedrockPkg!.label).toBe("Amazon Bedrock");
   });
 
-  it("should include Bedrock model variants", () => {
+  it("should include Bedrock model variants in OPENCODE_PRESET_MODEL_VARIANTS", () => {
     const variants = OPENCODE_PRESET_MODEL_VARIANTS["@ai-sdk/amazon-bedrock"];
     expect(variants).toBeDefined();
     expect(variants.length).toBeGreaterThan(0);
@@ -25,44 +25,29 @@ describe("AWS Bedrock OpenCode Provider Presets", () => {
     expect(opusModel).toBeDefined();
   });
 
-  const bedrockPreset = opencodeProviderPresets.find(
-    (p) => p.name === "AWS Bedrock",
-  );
-
-  it("should include AWS Bedrock preset", () => {
-    expect(bedrockPreset).toBeDefined();
-  });
-
-  it("Bedrock preset should use @ai-sdk/amazon-bedrock npm package", () => {
-    expect(bedrockPreset!.settingsConfig.npm).toBe(
-      "@ai-sdk/amazon-bedrock",
+  describe("启航 AI OpenCode preset", () => {
+    const qhaiPreset = opencodeProviderPresets.find(
+      (p) => p.name === "启航 AI",
     );
-  });
 
-  it("Bedrock preset should have region in options", () => {
-    expect(bedrockPreset!.settingsConfig.options).toHaveProperty("region");
-  });
+    it("should include 启航 AI preset", () => {
+      expect(qhaiPreset).toBeDefined();
+    });
 
-  it("Bedrock preset should have cloud_provider category", () => {
-    expect(bedrockPreset!.category).toBe("cloud_provider");
-  });
+    it("preset should have third_party category", () => {
+      expect(qhaiPreset!.category).toBe("third_party");
+    });
 
-  it("Bedrock preset should have template values for AWS credentials", () => {
-    expect(bedrockPreset!.templateValues).toBeDefined();
-    expect(bedrockPreset!.templateValues!.region).toBeDefined();
-    expect(bedrockPreset!.templateValues!.region.editorValue).toBe(
-      "us-west-2",
-    );
-    expect(bedrockPreset!.templateValues!.accessKeyId).toBeDefined();
-    expect(bedrockPreset!.templateValues!.secretAccessKey).toBeDefined();
-  });
+    it("preset should have models with Claude entries", () => {
+      const models = qhaiPreset!.settingsConfig.models;
+      expect(models).toBeDefined();
+      const modelIds = Object.keys(models!);
+      expect(modelIds.some((id) => id.includes("claude"))).toBe(true);
+    });
 
-  it("Bedrock preset should include Claude models", () => {
-    const models = bedrockPreset!.settingsConfig.models;
-    expect(models).toBeDefined();
-    const modelIds = Object.keys(models!);
-    expect(
-      modelIds.some((id) => id.includes("anthropic.claude")),
-    ).toBe(true);
+    it("opencodeProviderPresets should only contain 启航 AI", () => {
+      expect(opencodeProviderPresets).toHaveLength(1);
+      expect(opencodeProviderPresets[0].name).toBe("启航 AI");
+    });
   });
 });

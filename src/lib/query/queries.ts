@@ -17,6 +17,7 @@ import type {
   SessionMeta,
   SessionMessage,
 } from "@/types";
+import { normalizeProvidersForApp } from "@/utils/providerNormalization";
 
 const sortProviders = (
   providers: Record<string, Provider>,
@@ -68,6 +69,7 @@ export const useProvidersQuery = (
 
       try {
         providers = await providersApi.getAll(appId);
+        providers = normalizeProvidersForApp(providers, appId);
       } catch (error) {
         console.error("获取供应商列表失败:", error);
       }

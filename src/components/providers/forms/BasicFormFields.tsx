@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
 import type { ReactNode } from "react";
 import {
   FormControl,
@@ -9,33 +8,37 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ProviderIcon } from "@/components/ProviderIcon";
-import { IconPicker } from "@/components/IconPicker";
 import { getIconMetadata } from "@/icons/extracted/metadata";
 import type { UseFormReturn } from "react-hook-form";
 import type { ProviderFormData } from "@/lib/schemas/provider";
+
+interface WebsiteUrlOption {
+  url: string;
+  label: string;
+}
 
 interface BasicFormFieldsProps {
   form: UseFormReturn<ProviderFormData>;
   /** Slot to render content between icon and name fields */
   beforeNameSlot?: ReactNode;
+  /** 当提供时，官方地址字段改为下拉选择 */
+  websiteUrlOptions?: WebsiteUrlOption[];
 }
 
 export function BasicFormFields({
   form,
   beforeNameSlot,
+  websiteUrlOptions,
 }: BasicFormFieldsProps) {
   const { t } = useTranslation();
-  const [iconDialogOpen, setIconDialogOpen] = useState(false);
-
   const currentIcon = form.watch("icon");
   const currentIconColor = form.watch("iconColor");
   const providerName = form.watch("name") || "Provider";
@@ -43,79 +46,18 @@ export function BasicFormFields({
     currentIconColor ||
     (currentIcon ? getIconMetadata(currentIcon)?.defaultColor : undefined);
 
-  const handleIconSelect = (icon: string) => {
-    const meta = getIconMetadata(icon);
-    form.setValue("icon", icon);
-    form.setValue("iconColor", meta?.defaultColor ?? "");
-  };
-
   return (
     <>
-      {/* 图标选择区域 - 顶部居中，可选 */}
+      {/* 图标显示区域 - 顶部居中，固定不可选 */}
       <div className="flex justify-center mb-6">
-        <Dialog open={iconDialogOpen} onOpenChange={setIconDialogOpen}>
-          <DialogTrigger asChild>
-            <button
-              type="button"
-              className="w-20 h-20 p-3 rounded-xl border-2 border-muted hover:border-primary transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50 flex items-center justify-center"
-              title={
-                currentIcon
-                  ? t("providerIcon.clickToChange", {
-                      defaultValue: "点击更换图标",
-                    })
-                  : t("providerIcon.clickToSelect", {
-                      defaultValue: "点击选择图标",
-                    })
-              }
-            >
-              <ProviderIcon
-                icon={currentIcon}
-                name={providerName}
-                color={effectiveIconColor}
-                size={48}
-              />
-            </button>
-          </DialogTrigger>
-          <DialogContent
-            variant="fullscreen"
-            zIndex="top"
-            overlayClassName="bg-[hsl(var(--background))] backdrop-blur-0"
-            className="p-0 sm:rounded-none"
-          >
-            <div className="flex h-full flex-col">
-              <div className="flex-shrink-0 py-4 border-b border-border-default bg-muted/40">
-                <div className="px-6 flex items-center gap-4">
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline" size="icon">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                  </DialogClose>
-                  <p className="text-lg font-semibold leading-tight">
-                    {t("providerIcon.selectIcon", {
-                      defaultValue: "选择图标",
-                    })}
-                  </p>
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                <div className="space-y-2 px-6 py-6 w-full">
-                  <IconPicker
-                    value={currentIcon}
-                    onValueChange={handleIconSelect}
-                    color={effectiveIconColor}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">
-                        {t("common.done", { defaultValue: "完成" })}
-                      </Button>
-                    </DialogClose>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="w-20 h-20 p-3 rounded-xl flex items-center justify-center">
+          <ProviderIcon
+            icon={currentIcon}
+            name={providerName}
+            color={effectiveIconColor}
+            size={48}
+          />
+        </div>
       </div>
 
       {/* Slot for additional fields between icon and name */}
@@ -162,10 +104,30 @@ export function BasicFormFields({
           <FormItem>
             <FormLabel>{t("provider.websiteUrl")}</FormLabel>
             <FormControl>
-              <Input
-                {...field}
-                placeholder={t("providerForm.websiteUrlPlaceholder")}
-              />
+              {websiteUrlOptions && websiteUrlOptions.length > 0 ? (
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue
+                      placeholder={t("providerForm.websiteUrlPlaceholder")}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {websiteUrlOptions.map((opt) => (
+                      <SelectItem key={opt.url} value={opt.url}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  {...field}
+                  placeholder={t("providerForm.websiteUrlPlaceholder")}
+                />
+              )}
             </FormControl>
             <FormMessage />
           </FormItem>

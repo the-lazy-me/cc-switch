@@ -29,6 +29,7 @@ import { settingsApi } from "@/lib/api";
 import { LanguageSettings } from "@/components/settings/LanguageSettings";
 import { ThemeSettings } from "@/components/settings/ThemeSettings";
 import { WindowSettings } from "@/components/settings/WindowSettings";
+import { TakeoverSettings } from "@/components/settings/TakeoverSettings";
 import { AppVisibilitySettings } from "@/components/settings/AppVisibilitySettings";
 import { SkillSyncMethodSettings } from "@/components/settings/SkillSyncMethodSettings";
 import { TerminalSettings } from "@/components/settings/TerminalSettings";
@@ -220,6 +221,7 @@ export function SettingsPage({
                       settings={settings}
                       onChange={handleAutoSave}
                     />
+                    <TakeoverSettings settings={settings} onChange={handleAutoSave} />
                     <WindowSettings
                       settings={settings}
                       onChange={handleAutoSave}

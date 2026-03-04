@@ -42,6 +42,9 @@ interface OpenClawFormFieldsProps {
   // Models
   models: OpenClawModel[];
   onModelsChange: (models: OpenClawModel[]) => void;
+
+  // Predefined endpoint options (dropdown mode)
+  endpointOptions?: { url: string; label?: string }[];
 }
 
 export function OpenClawFormFields({
@@ -58,6 +61,7 @@ export function OpenClawFormFields({
   onApiChange,
   models,
   onModelsChange,
+  endpointOptions,
 }: OpenClawFormFieldsProps) {
   const { t } = useTranslation();
   const [expandedModels, setExpandedModels] = useState<Record<number, boolean>>(
@@ -181,12 +185,27 @@ export function OpenClawFormFields({
         <FormLabel htmlFor="openclaw-baseurl">
           {t("openclaw.baseUrl", { defaultValue: "API 端点" })}
         </FormLabel>
-        <Input
-          id="openclaw-baseurl"
-          value={baseUrl}
-          onChange={(e) => onBaseUrlChange(e.target.value)}
-          placeholder="https://api.example.com/v1"
-        />
+        {endpointOptions && endpointOptions.length > 0 ? (
+          <Select value={baseUrl} onValueChange={onBaseUrlChange}>
+            <SelectTrigger id="openclaw-baseurl">
+              <SelectValue placeholder="https://api.example.com/v1" />
+            </SelectTrigger>
+            <SelectContent>
+              {endpointOptions.map((opt) => (
+                <SelectItem key={opt.url} value={opt.url}>
+                  {opt.label ? `${opt.label} (${opt.url})` : opt.url}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            id="openclaw-baseurl"
+            value={baseUrl}
+            onChange={(e) => onBaseUrlChange(e.target.value)}
+            placeholder="https://api.example.com/v1"
+          />
+        )}
         <p className="text-xs text-muted-foreground">
           {t("openclaw.baseUrlHint", {
             defaultValue: "供应商的 API 端点地址。",

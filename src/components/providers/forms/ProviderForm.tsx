@@ -92,11 +92,11 @@ import {
 type PresetEntry = {
   id: string;
   preset:
-    | ProviderPreset
-    | CodexProviderPreset
-    | GeminiProviderPreset
-    | OpenCodeProviderPreset
-    | OpenClawProviderPreset;
+  | ProviderPreset
+  | CodexProviderPreset
+  | GeminiProviderPreset
+  | OpenCodeProviderPreset
+  | OpenClawProviderPreset;
 };
 
 interface ProviderFormProps {
@@ -119,6 +119,19 @@ interface ProviderFormProps {
   };
   showButtons?: boolean;
 }
+
+const QHAIGC_API_ENDPOINTS = [
+  { url: "https://api.qhaigc.net", label: "国际线路" },
+  { url: "https://api-hk.qhaigc.net", label: "香港线路" },
+];
+const QHAIGC_V1_ENDPOINTS = [
+  { url: "https://api.qhaigc.net/v1", label: "国际线路" },
+  { url: "https://api-hk.qhaigc.net/v1", label: "香港线路" },
+];
+const QHAIGC_WEBSITE_OPTIONS = [
+  { url: "https://www.qhaigc.net", label: "国际线路 (www.qhaigc.net)" },
+  { url: "https://www-hk.qhaigc.net", label: "香港线路 (www-hk.qhaigc.net)" },
+];
 
 export function ProviderForm({
   appId,
@@ -255,7 +268,7 @@ export function ProviderForm({
     settingsConfig: form.getValues("settingsConfig"),
     codexConfig: "",
     onSettingsConfigChange: (config) => form.setValue("settingsConfig", config),
-    onCodexConfigChange: () => {},
+    onCodexConfigChange: () => { },
   });
 
   const {
@@ -441,7 +454,7 @@ export function ProviderForm({
         }
         config.env[key] = value;
         form.setValue("settingsConfig", JSON.stringify(config, null, 2));
-      } catch {}
+      } catch { }
     },
     [form],
   );
@@ -509,7 +522,7 @@ export function ProviderForm({
 
   const initialOmoSettings =
     appId === "opencode" &&
-    (initialData?.category === "omo" || initialData?.category === "omo-slim")
+      (initialData?.category === "omo" || initialData?.category === "omo-slim")
       ? (initialData.settingsConfig as Record<string, unknown> | undefined)
       : undefined;
 
@@ -610,7 +623,7 @@ export function ProviderForm({
           );
           return;
         }
-        if (!apiKey.trim()) {
+        if (!apiKey.trim() && hasApiKeyField(form.getValues("settingsConfig"), "claude")) {
           toast.error(
             t("providerForm.apiKeyRequired", {
               defaultValue: "非官方供应商请填写 API Key",
@@ -627,7 +640,7 @@ export function ProviderForm({
           );
           return;
         }
-        if (!codexApiKey.trim()) {
+        if (!codexApiKey.trim() && codexBaseUrl.includes("api.qhaigc.net") === false) {
           toast.error(
             t("providerForm.apiKeyRequired", {
               defaultValue: "非官方供应商请填写 API Key",
@@ -644,7 +657,7 @@ export function ProviderForm({
           );
           return;
         }
-        if (!geminiApiKey.trim()) {
+        if (!geminiApiKey.trim() && hasApiKeyField(form.getValues("settingsConfig"), "gemini")) {
           toast.error(
             t("providerForm.apiKeyRequired", {
               defaultValue: "非官方供应商请填写 API Key",
@@ -850,7 +863,7 @@ export function ProviderForm({
 
   const {
     shouldShowApiKeyLink: shouldShowClaudeApiKeyLink,
-    websiteUrl: claudeWebsiteUrl,
+    websiteUrl: claudeWebsiteUrlRaw,
     isPartner: isClaudePartner,
     partnerPromotionKey: claudePartnerPromotionKey,
   } = useApiKeyLink({
@@ -860,6 +873,26 @@ export function ProviderForm({
     presetEntries,
     formWebsiteUrl: form.watch("websiteUrl") || "",
   });
+
+  // 从 settingsConfig 中推断 启航 AI 的最优线路，覆盖 API Key 获取链接（全局统一）
+  const watchedSettingsConfig = form.watch("settingsConfig");
+  const claudeWebsiteUrl = useMemo(() => {
+    if (appId !== "claude") return claudeWebsiteUrlRaw;
+    try {
+      const config = JSON.parse(watchedSettingsConfig || "{}") as {
+        env?: Record<string, unknown>;
+      };
+      const baseUrl = config.env?.ANTHROPIC_BASE_URL;
+      if (typeof baseUrl === "string" && baseUrl.includes("qhaigc.net")) {
+        return baseUrl.includes("-hk.")
+          ? "https://www-hk.qhaigc.net/console/profile"
+          : "https://www.qhaigc.net/console/profile";
+      }
+    } catch {
+      // fall through
+    }
+    return claudeWebsiteUrlRaw;
+  }, [appId, claudeWebsiteUrlRaw, watchedSettingsConfig]);
 
   const {
     shouldShowApiKeyLink: shouldShowCodexApiKeyLink,
@@ -923,6 +956,34 @@ export function ProviderForm({
     codexBaseUrl,
     initialData,
   });
+
+  const activeBaseUrl =
+    appId === "codex"
+      ? codexBaseUrl
+      : appId === "gemini"
+        ? geminiBaseUrl
+        : appId === "opencode"
+          ? opencodeForm.opencodeBaseUrl
+          : appId === "openclaw"
+            ? openclawForm.openclawBaseUrl
+            : baseUrl;
+
+  const isQhaiProvider = activeBaseUrl.includes("qhaigc.net");
+
+  const qhaiEndpointOptions = isQhaiProvider
+    ? appId === "claude" || appId === "gemini"
+      ? QHAIGC_API_ENDPOINTS
+      : QHAIGC_V1_ENDPOINTS
+    : undefined;
+
+  // 官网链接与请求地址同步（启航 AI）
+  useEffect(() => {
+    if (!isQhaiProvider) return;
+    const websiteUrl = activeBaseUrl.includes("-hk.")
+      ? "https://www-hk.qhaigc.net"
+      : "https://www.qhaigc.net";
+    form.setValue("websiteUrl", websiteUrl);
+  }, [activeBaseUrl, isQhaiProvider, form]);
 
   const handlePresetChange = (value: string) => {
     setSelectedPresetId(value);
@@ -1104,6 +1165,7 @@ export function ProviderForm({
 
         <BasicFormFields
           form={form}
+          websiteUrlOptions={isQhaiProvider ? QHAIGC_WEBSITE_OPTIONS : undefined}
           beforeNameSlot={
             appId === "opencode" && !isAnyOmoCategory ? (
               <div className="space-y-2">
@@ -1126,10 +1188,10 @@ export function ProviderForm({
                       opencodeForm.opencodeProviderKey,
                     ) &&
                       !isEditMode) ||
-                    (opencodeForm.opencodeProviderKey.trim() !== "" &&
-                      !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(
-                        opencodeForm.opencodeProviderKey,
-                      ))
+                      (opencodeForm.opencodeProviderKey.trim() !== "" &&
+                        !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(
+                          opencodeForm.opencodeProviderKey,
+                        ))
                       ? "border-destructive"
                       : ""
                   }
@@ -1185,10 +1247,10 @@ export function ProviderForm({
                       openclawForm.openclawProviderKey,
                     ) &&
                       !isEditMode) ||
-                    (openclawForm.openclawProviderKey.trim() !== "" &&
-                      !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(
-                        openclawForm.openclawProviderKey,
-                      ))
+                      (openclawForm.openclawProviderKey.trim() !== "" &&
+                        !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(
+                          openclawForm.openclawProviderKey,
+                        ))
                       ? "border-destructive"
                       : ""
                   }
@@ -1266,6 +1328,7 @@ export function ProviderForm({
             speedTestEndpoints={speedTestEndpoints}
             apiFormat={localApiFormat}
             onApiFormatChange={handleApiFormatChange}
+            endpointOptions={qhaiEndpointOptions}
           />
         )}
 
@@ -1293,6 +1356,7 @@ export function ProviderForm({
             modelName={codexModelName}
             onModelNameChange={handleCodexModelNameChange}
             speedTestEndpoints={speedTestEndpoints}
+            endpointOptions={qhaiEndpointOptions}
           />
         )}
 
@@ -1322,6 +1386,7 @@ export function ProviderForm({
             model={geminiModel}
             onModelChange={handleGeminiModelChange}
             speedTestEndpoints={speedTestEndpoints}
+            endpointOptions={qhaiEndpointOptions}
           />
         )}
 
@@ -1342,6 +1407,7 @@ export function ProviderForm({
             onModelsChange={opencodeForm.handleOpencodeModelsChange}
             extraOptions={opencodeForm.opencodeExtraOptions}
             onExtraOptionsChange={opencodeForm.handleOpencodeExtraOptionsChange}
+            endpointOptions={qhaiEndpointOptions}
           />
         )}
 
@@ -1381,6 +1447,7 @@ export function ProviderForm({
             onApiChange={openclawForm.handleOpenclawApiChange}
             models={openclawForm.openclawModels}
             onModelsChange={openclawForm.handleOpenclawModelsChange}
+            endpointOptions={qhaiEndpointOptions}
           />
         )}
 
@@ -1431,7 +1498,7 @@ export function ProviderForm({
             <Label>{t("provider.configJson")}</Label>
             <JsonEditor
               value={omoDraft.mergedOmoJsonPreview}
-              onChange={() => {}}
+              onChange={() => { }}
               rows={14}
               showValidation={false}
               language="json"

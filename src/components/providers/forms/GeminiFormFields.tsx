@@ -39,6 +39,9 @@ interface GeminiFormFieldsProps {
 
   // Speed Test Endpoints
   speedTestEndpoints: EndpointCandidate[];
+
+  // Predefined endpoint options (dropdown mode)
+  endpointOptions?: { url: string; label?: string }[];
 }
 
 export function GeminiFormFields({
@@ -63,6 +66,7 @@ export function GeminiFormFields({
   model,
   onModelChange,
   speedTestEndpoints,
+  endpointOptions,
 }: GeminiFormFieldsProps) {
   const { t } = useTranslation();
 
@@ -118,6 +122,7 @@ export function GeminiFormFields({
             defaultValue: "https://your-api-endpoint.com/",
           })}
           onManageClick={() => onEndpointModalToggle(true)}
+          options={endpointOptions}
         />
       )}
 

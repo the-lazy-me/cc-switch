@@ -104,8 +104,30 @@ impl LiveSnapshot {
     }
 }
 
-/// Write live configuration snapshot for a provider
+/// Write live configuration snapshot for a provider.
+///
+/// This path respects per-app takeover switches and creates a one-time backup
+/// before first write.
 pub(crate) fn write_live_snapshot(app_type: &AppType, provider: &Provider) -> Result<(), AppError> {
+    if !crate::settings::is_app_takeover_enabled(app_type) {
+        log::debug!(
+            "Skip live write for {} because takeover is disabled",
+            app_type.as_str()
+        );
+        return Ok(());
+    }
+
+    crate::services::takeover::ensure_backup_before_takeover(app_type)?;
+    write_live_snapshot_unchecked(app_type, provider)
+}
+
+/// Write live snapshot without takeover checks/backup.
+///
+/// Used by internal recovery flows that must write regardless of UI switches.
+pub(crate) fn write_live_snapshot_unchecked(
+    app_type: &AppType,
+    provider: &Provider,
+) -> Result<(), AppError> {
     match app_type {
         AppType::Claude => {
             let path = get_claude_settings_path();

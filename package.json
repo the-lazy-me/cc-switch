@@ -1,7 +1,7 @@
 {
-  "name": "cc-switch",
+  "name": "qihanai",
   "version": "3.11.1",
-  "description": "All-in-One Assistant for Claude Code, Codex & Gemini CLI",
+  "description": "启航 AI 编程助手",
   "type": "module",
   "scripts": {
     "dev": "pnpm tauri dev",
@@ -16,7 +16,8 @@
     "test:unit:watch": "vitest watch"
   },
   "keywords": [],
-  "author": "Jason Young",
+  "author": "启航 AI",
+  "repository": "https://www.qhaigc.net",
   "license": "MIT",
   "devDependencies": {
     "@tauri-apps/cli": "^2.8.0",

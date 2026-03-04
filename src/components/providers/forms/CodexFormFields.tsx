@@ -35,6 +35,9 @@ interface CodexFormFieldsProps {
 
   // Speed Test Endpoints
   speedTestEndpoints: EndpointCandidate[];
+
+  // Predefined endpoint options (dropdown mode)
+  endpointOptions?: { url: string; label?: string }[];
 }
 
 export function CodexFormFields({
@@ -58,6 +61,7 @@ export function CodexFormFields({
   modelName = "",
   onModelNameChange,
   speedTestEndpoints,
+  endpointOptions,
 }: CodexFormFieldsProps) {
   const { t } = useTranslation();
 
@@ -94,6 +98,7 @@ export function CodexFormFields({
           placeholder={t("providerForm.codexApiEndpointPlaceholder")}
           hint={t("providerForm.codexApiHint")}
           onManageClick={() => onEndpointModalToggle(true)}
+          options={endpointOptions}
         />
       )}
 

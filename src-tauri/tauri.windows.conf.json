@@ -4,7 +4,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "CC Switch",
+        "title": "启航 AI 编程助手",
         "titleBarStyle": "Visible",
         "visible": false,
         "minWidth": 900,

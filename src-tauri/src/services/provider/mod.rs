@@ -27,7 +27,7 @@ pub use live::{
 
 // Internal re-exports (pub(crate))
 pub(crate) use live::sanitize_claude_settings_for_live;
-pub(crate) use live::write_live_snapshot;
+pub(crate) use live::{write_live_snapshot, write_live_snapshot_unchecked};
 
 // Internal re-exports
 use live::{

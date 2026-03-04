@@ -17,7 +17,7 @@ function parseModelsFromConfig(settingsConfig: string) {
     const reasoning =
       typeof env.ANTHROPIC_REASONING_MODEL === "string"
         ? env.ANTHROPIC_REASONING_MODEL
-        : "";
+        : "claude-opus-4-6";
     const small =
       typeof env.ANTHROPIC_SMALL_FAST_MODEL === "string"
         ? env.ANTHROPIC_SMALL_FAST_MODEL
@@ -95,7 +95,7 @@ export function useModelState({
       const reasoning =
         typeof env.ANTHROPIC_REASONING_MODEL === "string"
           ? env.ANTHROPIC_REASONING_MODEL
-          : "";
+          : "claude-opus-4-6";
       const small =
         typeof env.ANTHROPIC_SMALL_FAST_MODEL === "string"
           ? env.ANTHROPIC_SMALL_FAST_MODEL

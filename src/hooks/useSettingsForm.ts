@@ -5,6 +5,14 @@ import type { Settings } from "@/types";
 
 type Language = "zh" | "en" | "ja";
 
+const DEFAULT_TAKEOVER_APPS = {
+  claude: true,
+  codex: true,
+  gemini: true,
+  opencode: true,
+  openclaw: true,
+} as const;
+
 export type SettingsFormState = Omit<Settings, "language"> & {
   language: Language;
 };
@@ -85,6 +93,7 @@ export function useSettingsForm(): UseSettingsFormResult {
         data.enableClaudePluginIntegration ?? false,
       silentStartup: data.silentStartup ?? false,
       skipClaudeOnboarding: data.skipClaudeOnboarding ?? false,
+      takeoverApps: data.takeoverApps ?? { ...DEFAULT_TAKEOVER_APPS },
       claudeConfigDir: sanitizeDir(data.claudeConfigDir),
       codexConfigDir: sanitizeDir(data.codexConfigDir),
       geminiConfigDir: sanitizeDir(data.geminiConfigDir),
@@ -107,6 +116,7 @@ export function useSettingsForm(): UseSettingsFormResult {
             minimizeToTrayOnClose: true,
             enableClaudePluginIntegration: false,
             skipClaudeOnboarding: false,
+            takeoverApps: { ...DEFAULT_TAKEOVER_APPS },
             language: readPersistedLanguage(),
           } as SettingsFormState);
 
@@ -143,6 +153,7 @@ export function useSettingsForm(): UseSettingsFormResult {
           serverData.enableClaudePluginIntegration ?? false,
         silentStartup: serverData.silentStartup ?? false,
         skipClaudeOnboarding: serverData.skipClaudeOnboarding ?? false,
+        takeoverApps: serverData.takeoverApps ?? { ...DEFAULT_TAKEOVER_APPS },
         claudeConfigDir: sanitizeDir(serverData.claudeConfigDir),
         codexConfigDir: sanitizeDir(serverData.codexConfigDir),
         geminiConfigDir: sanitizeDir(serverData.geminiConfigDir),

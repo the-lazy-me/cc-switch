@@ -109,6 +109,33 @@ fn extract_base_url_from_provider(provider: &crate::provider::Provider) -> Optio
     }
 }
 
+/// NewAPI 固定模板代码（billing/subscription 接口）
+/// 每次 query_usage 时若 templateType=newapi 都会强制使用此模板，
+/// 避免数据库中遗留旧版脚本导致查询失败。
+const NEWAPI_BILLING_TEMPLATE: &str = r#"({
+  request: {
+    url: "{{baseUrl}}/v1/dashboard/billing/subscription",
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer {{apiKey}}"
+    },
+  },
+  extractor: function (response) {
+    if (typeof response?.balance === "number") {
+      return {
+        planName: "余额",
+        remaining: response.balance,
+        unit: "CNY",
+      };
+    }
+    return {
+      isValid: false,
+      invalidMessage: response.message || "查询失败"
+    };
+  },
+})"#;
+
 /// Query provider usage (using saved script configuration)
 pub async fn query_usage(
     state: &AppState,
@@ -159,8 +186,15 @@ pub async fn query_usage(
             .or_else(|| extract_base_url_from_provider(provider))
             .unwrap_or_default();
 
+        // 🔧 newapi 模板时强制使用最新的 billing/subscription 接口代码，
+        // 避免数据库中遗留旧版脚本导致外部查询失败
+        let script_code = match usage_script.template_type.as_deref() {
+            Some("newapi") => NEWAPI_BILLING_TEMPLATE.to_string(),
+            _ => usage_script.code.clone(),
+        };
+
         (
-            usage_script.code.clone(),
+            script_code,
             usage_script.timeout.unwrap_or(10),
             api_key,
             base_url,
@@ -185,9 +219,9 @@ pub async fn query_usage(
 /// Test usage script (using temporary script content, not saved)
 #[allow(clippy::too_many_arguments)]
 pub async fn test_usage_script(
-    _state: &AppState,
-    _app_type: AppType,
-    _provider_id: &str,
+    state: &AppState,
+    app_type: AppType,
+    provider_id: &str,
     script_code: &str,
     timeout: u64,
     api_key: Option<&str>,
@@ -196,11 +230,50 @@ pub async fn test_usage_script(
     user_id: Option<&str>,
     template_type: Option<&str>,
 ) -> Result<UsageResult, AppError> {
-    // Use provided credential parameters directly for testing
+    // 若前端未传入凭证，从供应商配置自动读取（复用供应商编辑页填写的 API Key）
+    let (resolved_api_key, resolved_base_url) = {
+        let has_api_key = api_key.map(|k| !k.is_empty()).unwrap_or(false);
+        let has_base_url = base_url.map(|u| !u.is_empty()).unwrap_or(false);
+
+        if !has_api_key || !has_base_url {
+            // 尝试从数据库读取供应商配置
+            if let Ok(providers) = state.db.get_all_providers(app_type.as_str()) {
+                if let Some(provider) = providers.get(provider_id) {
+                    let resolved_key = if has_api_key {
+                        api_key.unwrap_or("").to_string()
+                    } else {
+                        extract_api_key_from_provider(provider).unwrap_or_default()
+                    };
+                    let resolved_url = if has_base_url {
+                        base_url.unwrap_or("").to_string()
+                    } else {
+                        extract_base_url_from_provider(provider).unwrap_or_default()
+                    };
+                    (resolved_key, resolved_url)
+                } else {
+                    (
+                        api_key.unwrap_or("").to_string(),
+                        base_url.unwrap_or("").to_string(),
+                    )
+                }
+            } else {
+                (
+                    api_key.unwrap_or("").to_string(),
+                    base_url.unwrap_or("").to_string(),
+                )
+            }
+        } else {
+            (
+                api_key.unwrap_or("").to_string(),
+                base_url.unwrap_or("").to_string(),
+            )
+        }
+    };
+
     execute_and_format_usage_result(
         script_code,
-        api_key.unwrap_or(""),
-        base_url.unwrap_or(""),
+        &resolved_api_key,
+        &resolved_base_url,
         timeout,
         access_token,
         user_id,

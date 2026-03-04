@@ -165,6 +165,15 @@ export interface VisibleApps {
   openclaw: boolean;
 }
 
+// 每个客户端的配置接管开关
+export interface TakeoverApps {
+  claude: boolean;
+  codex: boolean;
+  gemini: boolean;
+  opencode: boolean;
+  openclaw: boolean;
+}
+
 // WebDAV v2 同步状态
 export interface WebDavSyncStatus {
   lastSyncAt?: number | null;
@@ -224,6 +233,8 @@ export interface Settings {
 
   // 主页面显示的应用（默认全部显示）
   visibleApps?: VisibleApps;
+  // 配置接管开关（默认全部开启）
+  takeoverApps?: TakeoverApps;
 
   // ===== 设备级目录覆盖 =====
   // 覆盖 Claude Code 配置目录（可选）

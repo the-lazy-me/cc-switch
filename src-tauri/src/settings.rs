@@ -203,6 +203,10 @@ pub struct AppSettings {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub visible_apps: Option<VisibleApps>,
 
+    // ===== 供应商接管开关（每个客户端独立）=====
+    #[serde(default)]
+    pub takeover_apps: VisibleApps,
+
     // ===== 设备级目录覆盖 =====
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub claude_config_dir: Option<String>,
@@ -284,6 +288,7 @@ impl Default for AppSettings {
             usage_confirmed: None,
             language: None,
             visible_apps: None,
+            takeover_apps: VisibleApps::default(),
             claude_config_dir: None,
             codex_config_dir: None,
             gemini_config_dir: None,
@@ -307,11 +312,7 @@ impl Default for AppSettings {
 impl AppSettings {
     fn settings_path() -> Option<PathBuf> {
         // settings.json 保留用于旧版本迁移和无数据库场景
-        Some(
-            crate::config::get_home_dir()
-                .join(".cc-switch")
-                .join("settings.json"),
-        )
+        Some(crate::config::get_app_config_dir().join("settings.json"))
     }
 
     fn normalize_paths(&mut self) {
@@ -468,6 +469,17 @@ pub fn get_settings_for_frontend() -> AppSettings {
     }
     settings.webdav_backup = None;
     settings
+}
+
+pub fn is_app_takeover_enabled(app_type: &AppType) -> bool {
+    settings_store()
+        .read()
+        .unwrap_or_else(|e| {
+            log::warn!("设置锁已毒化，使用恢复值: {e}");
+            e.into_inner()
+        })
+        .takeover_apps
+        .is_visible(app_type)
 }
 
 pub fn update_settings(mut new_settings: AppSettings) -> Result<(), AppError> {

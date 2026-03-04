@@ -36,21 +36,21 @@ export interface UniversalProviderPreset {
 }
 
 /**
- * NewAPI 默认模型配置
+ * 启航 AI 默认模型配置
  */
-const NEWAPI_DEFAULT_MODELS: UniversalProviderModels = {
+const QIHANAI_DEFAULT_MODELS: UniversalProviderModels = {
   claude: {
-    model: "claude-sonnet-4-20250514",
-    haikuModel: "claude-haiku-4-20250514",
-    sonnetModel: "claude-sonnet-4-20250514",
-    opusModel: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-5-20250929",
+    haikuModel: "claude-haiku-4-5-20251001",
+    sonnetModel: "claude-sonnet-4-5-20250929",
+    opusModel: "claude-opus-4-5-20251101",
   },
   codex: {
-    model: "gpt-4o",
+    model: "gpt-5.3-codex",
     reasoningEffort: "high",
   },
   gemini: {
-    model: "gemini-2.5-pro",
+    model: "gemini-3-pro-preview",
   },
 };
 
@@ -59,33 +59,18 @@ const NEWAPI_DEFAULT_MODELS: UniversalProviderModels = {
  */
 export const universalProviderPresets: UniversalProviderPreset[] = [
   {
-    name: "NewAPI",
+    name: "启航 AI",
     providerType: "newapi",
     defaultApps: {
       claude: true,
       codex: true,
       gemini: true,
     },
-    defaultModels: NEWAPI_DEFAULT_MODELS,
-    websiteUrl: "https://www.newapi.pro",
-    icon: "newapi",
-    iconColor: "#00A67E",
-    description:
-      "NewAPI 是一个可自部署的 API 网关，支持 Anthropic、OpenAI、Gemini 等多种协议",
-  },
-  {
-    name: "自定义网关",
-    providerType: "custom_gateway",
-    defaultApps: {
-      claude: true,
-      codex: true,
-      gemini: true,
-    },
-    defaultModels: NEWAPI_DEFAULT_MODELS,
-    icon: "openai",
-    iconColor: "#6366F1",
-    description: "自定义配置的 API 网关",
-    isCustomTemplate: true,
+    defaultModels: QIHANAI_DEFAULT_MODELS,
+    websiteUrl: "https://www.qhaigc.net",
+    icon: "generic",
+    iconColor: "#3B82F6",
+    description: "启航 AI 一站式 AI 编程服务，支持 Claude、Codex、Gemini 等多种协议",
   },
 ];
 

@@ -1,7 +1,19 @@
 import { useTranslation } from "react-i18next";
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Zap } from "lucide-react";
+
+interface EndpointOption {
+  url: string;
+  label?: string;
+}
 
 interface EndpointFieldProps {
   id: string;
@@ -13,6 +25,7 @@ interface EndpointFieldProps {
   showManageButton?: boolean;
   onManageClick?: () => void;
   manageButtonLabel?: string;
+  options?: EndpointOption[];
 }
 
 export function EndpointField({
@@ -25,6 +38,7 @@ export function EndpointField({
   showManageButton = true,
   onManageClick,
   manageButtonLabel,
+  options,
 }: EndpointFieldProps) {
   const { t } = useTranslation();
 
@@ -36,7 +50,7 @@ export function EndpointField({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <FormLabel htmlFor={id}>{label}</FormLabel>
-        {showManageButton && onManageClick && (
+        {!options && showManageButton && onManageClick && (
           <button
             type="button"
             onClick={onManageClick}
@@ -47,14 +61,29 @@ export function EndpointField({
           </button>
         )}
       </div>
-      <Input
-        id={id}
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoComplete="off"
-      />
+      {options && options.length > 0 ? (
+        <Select value={value} onValueChange={onChange}>
+          <SelectTrigger id={id}>
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((opt) => (
+              <SelectItem key={opt.url} value={opt.url}>
+                {opt.label ? `${opt.label} (${opt.url})` : opt.url}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Input
+          id={id}
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          autoComplete="off"
+        />
+      )}
       {hint ? (
         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
           <p className="text-xs text-amber-600 dark:text-amber-400">{hint}</p>

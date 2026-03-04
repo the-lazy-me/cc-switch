@@ -147,7 +147,7 @@ export function PricingEditModal({
 
         <div className="space-y-2">
           <Label htmlFor="inputCost">
-            {t("usage.inputCostPerMillion", "输入成本 (每百万 tokens, USD)")}
+            {t("usage.inputCostPerMillion", "输入成本 (每百万 tokens, CNY)")}
           </Label>
           <Input
             id="inputCost"
@@ -164,7 +164,7 @@ export function PricingEditModal({
 
         <div className="space-y-2">
           <Label htmlFor="outputCost">
-            {t("usage.outputCostPerMillion", "输出成本 (每百万 tokens, USD)")}
+            {t("usage.outputCostPerMillion", "输出成本 (每百万 tokens, CNY)")}
           </Label>
           <Input
             id="outputCost"
@@ -183,7 +183,7 @@ export function PricingEditModal({
           <Label htmlFor="cacheReadCost">
             {t(
               "usage.cacheReadCostPerMillion",
-              "缓存读取成本 (每百万 tokens, USD)",
+              "缓存读取成本 (每百万 tokens, CNY)",
             )}
           </Label>
           <Input
@@ -203,7 +203,7 @@ export function PricingEditModal({
           <Label htmlFor="cacheCreationCost">
             {t(
               "usage.cacheCreationCostPerMillion",
-              "缓存写入成本 (每百万 tokens, USD)",
+              "缓存写入成本 (每百万 tokens, CNY)",
             )}
           </Label>
           <Input

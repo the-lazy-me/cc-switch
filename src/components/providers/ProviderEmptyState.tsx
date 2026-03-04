@@ -3,12 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 interface ProviderEmptyStateProps {
-  onCreate?: () => void;
   onImport?: () => void;
 }
 
 export function ProviderEmptyState({
-  onCreate,
   onImport,
 }: ProviderEmptyStateProps) {
   const { t } = useTranslation();
@@ -27,11 +25,6 @@ export function ProviderEmptyState({
           <Button onClick={onImport}>
             <Download className="mr-2 h-4 w-4" />
             {t("provider.importCurrent")}
-          </Button>
-        )}
-        {onCreate && (
-          <Button variant={onImport ? "outline" : "default"} onClick={onCreate}>
-            {t("provider.addProvider")}
           </Button>
         )}
       </div>

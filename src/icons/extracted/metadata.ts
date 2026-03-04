@@ -380,6 +380,13 @@ export const iconMetadata: Record<string, IconMetadata> = {
     keywords: ["nvidia", "nim", "gpu"],
     defaultColor: "#74B71B",
   },
+  qihanai: {
+    name: "qihanai",
+    displayName: "启航 AI",
+    category: "ai-provider",
+    keywords: ["qihanai", "qihan", "启航"],
+    defaultColor: "transparent",
+  },
 };
 
 export function getIconMetadata(name: string): IconMetadata | undefined {

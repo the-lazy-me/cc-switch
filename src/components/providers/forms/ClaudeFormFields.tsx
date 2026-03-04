@@ -17,6 +17,11 @@ interface EndpointCandidate {
   url: string;
 }
 
+interface EndpointOption {
+  url: string;
+  label?: string;
+}
+
 interface ClaudeFormFieldsProps {
   providerId?: string;
   // API Key
@@ -68,6 +73,9 @@ interface ClaudeFormFieldsProps {
   // API Format (for third-party providers that use OpenAI Chat Completions format)
   apiFormat: ClaudeApiFormat;
   onApiFormatChange: (format: ClaudeApiFormat) => void;
+
+  // Predefined endpoint options (dropdown mode)
+  endpointOptions?: EndpointOption[];
 }
 
 export function ClaudeFormFields({
@@ -102,6 +110,7 @@ export function ClaudeFormFields({
   speedTestEndpoints,
   apiFormat,
   onApiFormatChange,
+  endpointOptions,
 }: ClaudeFormFieldsProps) {
   const { t } = useTranslation();
 
@@ -118,6 +127,22 @@ export function ClaudeFormFields({
           isPartner={isPartner}
           partnerPromotionKey={partnerPromotionKey}
         />
+      )}
+
+      {/* 系统令牌链接（无需 API Key 时显示） */}
+      {!shouldShowApiKey && shouldShowApiKeyLink && websiteUrl && (
+        <div className="space-y-1 pl-1">
+          <a
+            href={websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-400 dark:text-blue-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+          >
+            {t("providerForm.getSystemToken", {
+              defaultValue: "获取系统令牌",
+            })}
+          </a>
+        </div>
       )}
 
       {/* 模板变量输入 */}
@@ -169,6 +194,7 @@ export function ClaudeFormFields({
               : t("providerForm.apiHint")
           }
           onManageClick={() => onEndpointModalToggle(true)}
+          options={endpointOptions}
         />
       )}
 
@@ -254,6 +280,7 @@ export function ClaudeFormFields({
                 onChange={(e) =>
                   onModelChange("ANTHROPIC_REASONING_MODEL", e.target.value)
                 }
+                placeholder="claude-opus-4-6"
                 autoComplete="off"
               />
             </div>

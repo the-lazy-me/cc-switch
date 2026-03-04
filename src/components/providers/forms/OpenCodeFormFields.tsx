@@ -153,6 +153,9 @@ interface OpenCodeFormFieldsProps {
   // Extra Options
   extraOptions: Record<string, string>;
   onExtraOptionsChange: (options: Record<string, string>) => void;
+
+  // Predefined endpoint options (dropdown mode)
+  endpointOptions?: { url: string; label?: string }[];
 }
 
 export function OpenCodeFormFields({
@@ -171,6 +174,7 @@ export function OpenCodeFormFields({
   onModelsChange,
   extraOptions,
   onExtraOptionsChange,
+  endpointOptions,
 }: OpenCodeFormFieldsProps) {
   const { t } = useTranslation();
 
@@ -389,12 +393,27 @@ export function OpenCodeFormFields({
         <FormLabel htmlFor="opencode-baseurl">
           {t("opencode.baseUrl", { defaultValue: "Base URL" })}
         </FormLabel>
-        <Input
-          id="opencode-baseurl"
-          value={baseUrl}
-          onChange={(e) => onBaseUrlChange(e.target.value)}
-          placeholder="https://api.example.com/v1"
-        />
+        {endpointOptions && endpointOptions.length > 0 ? (
+          <Select value={baseUrl} onValueChange={onBaseUrlChange}>
+            <SelectTrigger id="opencode-baseurl">
+              <SelectValue placeholder="https://api.example.com/v1" />
+            </SelectTrigger>
+            <SelectContent>
+              {endpointOptions.map((opt) => (
+                <SelectItem key={opt.url} value={opt.url}>
+                  {opt.label ? `${opt.label} (${opt.url})` : opt.url}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            id="opencode-baseurl"
+            value={baseUrl}
+            onChange={(e) => onBaseUrlChange(e.target.value)}
+            placeholder="https://api.example.com/v1"
+          />
+        )}
         <p className="text-xs text-muted-foreground">
           {t("opencode.baseUrlHint", {
             defaultValue:
