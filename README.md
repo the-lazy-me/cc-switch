@@ -223,7 +223,7 @@ For detailed guides on every feature, check out the **[User Manual](docs/user-ma
 
 ### Windows Users
 
-Download the latest `CC-Switch-v{version}-Windows.msi` installer or `CC-Switch-v{version}-Windows-Portable.zip` portable version from the [Releases](../../releases) page.
+Download the latest `CC-Switch-v{version}-Windows-Setup.exe` installer or `CC-Switch-v{version}-Windows-Portable.zip` portable version from the [Releases](../../releases) page.
 
 ### macOS Users
 
@@ -353,6 +353,15 @@ pnpm build
 # Build debug version
 pnpm tauri build --debug
 ```
+
+### Manually Trigger Windows Setup Build (GitHub Actions)
+
+The primary Windows installer pipeline now runs on GitHub Windows runner (NSIS). Open **Actions** in the repository, choose **Manual Windows Setup Build**, and click **Run workflow**.
+
+After the workflow completes, download artifacts from that run:
+
+- `启航-AI-编程助手-v{version}-Windows-Setup.exe`
+- `启航-AI-编程助手-v{version}-Windows-Setup.exe.sig` (if generated)
 
 ### Rust Backend Development
 

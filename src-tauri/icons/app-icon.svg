@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="50 50 56 56" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="78,58 95.32,68 95.32,88 78,98 60.68,88 60.68,68"
+           fill="#1f2937"
+           stroke="#2b98c9"
+           stroke-width="2.5"
+           stroke-linejoin="round" />
+
+  <path d="M 78 63 Q 78 69 84 69 Q 78 69 78 75 Q 78 69 72 69 Q 78 69 78 63"
+        fill="#2b98c9" />
+
+  <g fill="none" stroke="#2b98c9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="72,79 66,86 72,93" />
+    <polyline points="84,79 90,86 84,93" />
+    <line x1="80" y1="77" x2="75" y2="95" />
+  </g>
+</svg>

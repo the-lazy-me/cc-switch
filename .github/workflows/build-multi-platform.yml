@@ -77,7 +77,7 @@ jobs:
           node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.bundle=j.bundle||{};j.bundle.createUpdaterArtifacts=false;fs.writeFileSync(p,JSON.stringify(j,null,2));"
 
       - name: Build no-UI binary
-        run: cargo build --manifest-path src-tauri/Cargo.toml --release
+        run: cargo build --manifest-path src-tauri/Cargo.toml --release --features custom-protocol
 
       - name: Build UI packages
         run: ${{ matrix.gui_cmd }}
