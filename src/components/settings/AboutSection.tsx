@@ -403,7 +403,7 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
         </motion.div>
       )}
       <p className="text-center text-xs text-muted-foreground/50 pt-2">
-        基于 CC Switch 二次定制开发
+        基于 启航 AI 编程助手 二次定制开发
       </p>
     </motion.section>
   );

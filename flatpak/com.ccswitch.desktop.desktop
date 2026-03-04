@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=CC Switch
-Comment=All-in-One Assistant for Claude Code, Codex & Gemini CLI
+Name=启航 AI 编程助手
+Comment=启航 AI 编程助手（Claude Code、Codex、Gemini CLI）
 Exec=cc-switch
 Icon=com.ccswitch.desktop
 Terminal=false
