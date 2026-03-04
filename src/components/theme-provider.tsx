@@ -27,14 +27,23 @@ const ThemeProviderContext = createContext<ThemeContextValue | undefined>(
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "cc-switch-theme",
+  storageKey = "qihang-ai-theme",
 }: ThemeProviderProps) {
+  const LEGACY_STORAGE_KEY = "cc-switch-theme";
   const getInitialTheme = () => {
     if (typeof window === "undefined") {
       return defaultTheme;
     }
 
-    const stored = window.localStorage.getItem(storageKey) as Theme | null;
+    let stored = window.localStorage.getItem(storageKey) as Theme | null;
+    if (!stored && storageKey === "qihang-ai-theme") {
+      const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY) as Theme | null;
+      if (legacy === "light" || legacy === "dark" || legacy === "system") {
+        window.localStorage.setItem(storageKey, legacy);
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+        stored = legacy;
+      }
+    }
     if (stored === "light" || stored === "dark" || stored === "system") {
       return stored;
     }

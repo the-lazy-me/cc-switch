@@ -125,7 +125,7 @@ impl Database {
         Err(AppError::localized(
             "backup.sql.invalid_format",
             "仅支持导入由启航 AI 编程助手导出的 SQL 备份文件。",
-            "Only SQL backups exported by 启航 AI are supported.",
+            "Only SQL backups exported by Qihang AI Coding Assistant are supported.",
         ))
     }
 

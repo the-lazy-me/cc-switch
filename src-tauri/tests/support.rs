@@ -9,7 +9,7 @@ use cc_switch_lib::{
 pub fn ensure_test_home() -> &'static Path {
     static HOME: OnceLock<PathBuf> = OnceLock::new();
     HOME.get_or_init(|| {
-        let base = std::env::temp_dir().join("cc-switch-test-home");
+        let base = std::env::temp_dir().join("qihang-ai-test-home");
         if base.exists() {
             let _ = std::fs::remove_dir_all(&base);
         }
@@ -28,7 +28,7 @@ pub fn ensure_test_home() -> &'static Path {
 /// 清理测试目录中生成的配置文件与缓存。
 pub fn reset_test_fs() {
     let home = ensure_test_home();
-    for sub in [".claude", ".codex", ".cc-switch", ".gemini"] {
+    for sub in [".claude", ".codex", ".qihang-ai", ".gemini"] {
         let path = home.join(sub);
         if path.exists() {
             if let Err(err) = std::fs::remove_dir_all(&path) {

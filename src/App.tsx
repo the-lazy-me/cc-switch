@@ -96,7 +96,8 @@ const DRAG_BAR_HEIGHT = isWindows() || isLinux() ? 0 : 28; // px
 const HEADER_HEIGHT = 64; // px
 const CONTENT_TOP_OFFSET = DRAG_BAR_HEIGHT + HEADER_HEIGHT;
 
-const STORAGE_KEY = "cc-switch-last-app";
+const STORAGE_KEY = "qihang-ai-last-app";
+const LEGACY_STORAGE_KEY = "cc-switch-last-app";
 const VALID_APPS: AppId[] = [
   "claude",
   "codex",
@@ -106,14 +107,21 @@ const VALID_APPS: AppId[] = [
 ];
 
 const getInitialApp = (): AppId => {
-  const saved = localStorage.getItem(STORAGE_KEY) as AppId | null;
+  const saved =
+    (localStorage.getItem(STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_STORAGE_KEY)) as AppId | null;
   if (saved && VALID_APPS.includes(saved)) {
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      localStorage.setItem(STORAGE_KEY, saved);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }
     return saved;
   }
   return "claude";
 };
 
-const VIEW_STORAGE_KEY = "cc-switch-last-view";
+const VIEW_STORAGE_KEY = "qihang-ai-last-view";
+const LEGACY_VIEW_STORAGE_KEY = "cc-switch-last-view";
 const VALID_VIEWS: View[] = [
   "providers",
   "settings",
@@ -131,8 +139,14 @@ const VALID_VIEWS: View[] = [
 ];
 
 const getInitialView = (): View => {
-  const saved = localStorage.getItem(VIEW_STORAGE_KEY) as View | null;
+  const saved =
+    (localStorage.getItem(VIEW_STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_VIEW_STORAGE_KEY)) as View | null;
   if (saved && VALID_VIEWS.includes(saved)) {
+    if (!localStorage.getItem(VIEW_STORAGE_KEY)) {
+      localStorage.setItem(VIEW_STORAGE_KEY, saved);
+      localStorage.removeItem(LEGACY_VIEW_STORAGE_KEY);
+    }
     return saved;
   }
   return "providers";
@@ -147,6 +161,7 @@ function App() {
   const [settingsDefaultTab, setSettingsDefaultTab] = useState("general");
   useEffect(() => {
     localStorage.setItem(VIEW_STORAGE_KEY, currentView);
+    localStorage.removeItem(LEGACY_VIEW_STORAGE_KEY);
   }, [currentView]);
 
   const { data: settingsData } = useSettingsQuery();

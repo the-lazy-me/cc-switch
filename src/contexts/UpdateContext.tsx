@@ -29,8 +29,9 @@ interface UpdateContextValue {
 const UpdateContext = createContext<UpdateContextValue | undefined>(undefined);
 
 export function UpdateProvider({ children }: { children: React.ReactNode }) {
-  const DISMISSED_VERSION_KEY = "ccswitch:update:dismissedVersion";
-  const LEGACY_DISMISSED_KEY = "dismissedUpdateVersion"; // 兼容旧键
+  const DISMISSED_VERSION_KEY = "qihang-ai:update:dismissedVersion";
+  const LEGACY_DISMISSED_KEY = "ccswitch:update:dismissedVersion"; // 兼容旧键
+  const LEGACY_DISMISSED_KEY_V1 = "dismissedUpdateVersion"; // 兼容更旧键
 
   const [hasUpdate, setHasUpdate] = useState(false);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
@@ -47,10 +48,13 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
     // 读取新键；若不存在，尝试迁移旧键
     let dismissedVersion = localStorage.getItem(DISMISSED_VERSION_KEY);
     if (!dismissedVersion) {
-      const legacy = localStorage.getItem(LEGACY_DISMISSED_KEY);
+      const legacy =
+        localStorage.getItem(LEGACY_DISMISSED_KEY) ??
+        localStorage.getItem(LEGACY_DISMISSED_KEY_V1);
       if (legacy) {
         localStorage.setItem(DISMISSED_VERSION_KEY, legacy);
         localStorage.removeItem(LEGACY_DISMISSED_KEY);
+        localStorage.removeItem(LEGACY_DISMISSED_KEY_V1);
         dismissedVersion = legacy;
       }
     }
@@ -77,10 +81,13 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
         // 检查是否已经关闭过这个版本的提醒
         let dismissedVersion = localStorage.getItem(DISMISSED_VERSION_KEY);
         if (!dismissedVersion) {
-          const legacy = localStorage.getItem(LEGACY_DISMISSED_KEY);
+          const legacy =
+            localStorage.getItem(LEGACY_DISMISSED_KEY) ??
+            localStorage.getItem(LEGACY_DISMISSED_KEY_V1);
           if (legacy) {
             localStorage.setItem(DISMISSED_VERSION_KEY, legacy);
             localStorage.removeItem(LEGACY_DISMISSED_KEY);
+            localStorage.removeItem(LEGACY_DISMISSED_KEY_V1);
             dismissedVersion = legacy;
           }
         }
@@ -110,6 +117,7 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(DISMISSED_VERSION_KEY, updateInfo.availableVersion);
       // 清理旧键
       localStorage.removeItem(LEGACY_DISMISSED_KEY);
+      localStorage.removeItem(LEGACY_DISMISSED_KEY_V1);
     }
   }, [updateInfo?.availableVersion]);
 
@@ -117,6 +125,7 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
     setIsDismissed(false);
     localStorage.removeItem(DISMISSED_VERSION_KEY);
     localStorage.removeItem(LEGACY_DISMISSED_KEY);
+    localStorage.removeItem(LEGACY_DISMISSED_KEY_V1);
   }, []);
 
   // 应用启动时自动检查更新

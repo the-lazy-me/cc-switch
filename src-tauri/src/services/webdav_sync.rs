@@ -581,12 +581,12 @@ mod tests {
     #[test]
     fn remote_dir_segments_uses_v2() {
         let settings = WebDavSyncSettings {
-            remote_root: "cc-switch-sync".to_string(),
+            remote_root: "qihang-ai-sync".to_string(),
             profile: "default".to_string(),
             ..WebDavSyncSettings::default()
         };
         let segs = remote_dir_segments(&settings);
-        assert_eq!(segs, vec!["cc-switch-sync", "v2", "default"]);
+        assert_eq!(segs, vec!["qihang-ai-sync", "v2", "default"]);
     }
 
     #[test]

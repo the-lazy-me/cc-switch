@@ -88,7 +88,7 @@ jobs:
         run: |
           set -euxo pipefail
           mkdir -p dist-artifacts/no-ui dist-artifacts/ui
-          cp src-tauri/target/release/cc-switch dist-artifacts/no-ui/
+          cp src-tauri/target/release/qihang-ai-coding-assistant dist-artifacts/no-ui/
           find src-tauri/target/release/bundle -type f \( -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" -o -name "*.tar.gz" \) -exec cp {} dist-artifacts/ui/ \; || true
           find src-tauri/target/release/bundle -type d -name "*.app" -exec cp -R {} dist-artifacts/ui/ \; || true
 
@@ -98,7 +98,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path dist-artifacts/no-ui | Out-Null
           New-Item -ItemType Directory -Force -Path dist-artifacts/ui | Out-Null
-          Copy-Item src-tauri/target/release/cc-switch.exe dist-artifacts/no-ui/
+          Copy-Item src-tauri/target/release/qihang-ai-coding-assistant.exe dist-artifacts/no-ui/
           Get-ChildItem -Path src-tauri/target/release/bundle -Recurse -File -Include *.msi,*.exe,*.zip | ForEach-Object {
             Copy-Item $_.FullName dist-artifacts/ui/
           }

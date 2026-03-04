@@ -11,7 +11,8 @@ interface AppSwitcherProps {
 }
 
 const ALL_APPS: AppId[] = ["claude", "codex", "gemini", "opencode", "openclaw"];
-const STORAGE_KEY = "cc-switch-last-app";
+const STORAGE_KEY = "qihang-ai-last-app";
+const LEGACY_STORAGE_KEY = "cc-switch-last-app";
 
 export function AppSwitcher({
   activeApp,
@@ -22,6 +23,7 @@ export function AppSwitcher({
   const handleSwitch = (app: AppId) => {
     if (app === activeApp) return;
     localStorage.setItem(STORAGE_KEY, app);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     onSwitch(app);
   };
   const iconSize = 20;

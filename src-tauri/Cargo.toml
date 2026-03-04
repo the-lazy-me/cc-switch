@@ -1,5 +1,5 @@
 [package]
-name = "cc-switch"
+name = "qihang-ai-coding-assistant"
 version = "3.11.1"
 description = "启航 AI 编程助手"
 authors = ["启航 AI"]

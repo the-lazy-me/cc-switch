@@ -2,8 +2,8 @@
 Type=Application
 Name=启航 AI 编程助手
 Comment=启航 AI 编程助手（Claude Code、Codex、Gemini CLI）
-Exec=cc-switch
-Icon=com.ccswitch.desktop
+Exec=qihang-ai-coding-assistant
+Icon=com.qihang.ai
 Terminal=false
 Categories=Utility;Development;
 StartupNotify=true
