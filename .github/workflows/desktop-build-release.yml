@@ -1,0 +1,212 @@
+name: Desktop Build And Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows-setup:
+    name: Build Windows Setup.exe
+    runs-on: windows-2022
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.12.3
+          run_install: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Disable updater signing requirement for CI build
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.bundle=j.bundle||{};j.bundle.createUpdaterArtifacts=false;fs.writeFileSync(p,JSON.stringify(j,null,2));"
+
+      - name: Build NSIS setup
+        run: pnpm tauri build --bundles nsis
+
+      - name: Collect setup artifact
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path dist-artifacts | Out-Null
+
+          $setup = Get-ChildItem -Path 'src-tauri/target/release/bundle/nsis' -Recurse -File -Include *.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($null -eq $setup) {
+            $setup = Get-ChildItem -Path 'src-tauri/target/release/bundle' -Recurse -File -Include *.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          if ($null -eq $setup) {
+            throw 'No NSIS Setup.exe found'
+          }
+
+          $appVersion = node -p "require('./src-tauri/tauri.conf.json').version"
+          if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $version = $env:GITHUB_REF_NAME
+          } else {
+            $version = "v$appVersion"
+          }
+
+          $dest = "启航-AI-编程助手-$version-Windows-Setup.exe"
+          Copy-Item $setup.FullName (Join-Path dist-artifacts $dest)
+          Write-Host "Setup copied: $dest"
+
+      - name: Upload Windows setup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-setup
+          path: dist-artifacts/*.exe
+          if-no-files-found: error
+
+  build-macos-app:
+    name: Build macOS app
+    runs-on: macos-14
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.12.3
+          run_install: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add macOS targets
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Disable updater signing requirement for CI build
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.bundle=j.bundle||{};j.bundle.createUpdaterArtifacts=false;fs.writeFileSync(p,JSON.stringify(j,null,2));"
+
+      - name: Build macOS app bundle
+        run: pnpm tauri build --target universal-apple-darwin --bundles app
+
+      - name: Collect macOS app artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist-artifacts
+
+          APP_PATH=""
+          for path in \
+            "src-tauri/target/universal-apple-darwin/release/bundle/macos" \
+            "src-tauri/target/aarch64-apple-darwin/release/bundle/macos" \
+            "src-tauri/target/x86_64-apple-darwin/release/bundle/macos" \
+            "src-tauri/target/release/bundle/macos"; do
+            if [ -d "$path" ]; then
+              APP_PATH=$(find "$path" -maxdepth 1 -name "*.app" -type d | head -1 || true)
+              [ -n "$APP_PATH" ] && break
+            fi
+          done
+
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app found under src-tauri/target" >&2
+            exit 1
+          fi
+
+          APP_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION="$GITHUB_REF_NAME"
+          else
+            VERSION="v$APP_VERSION"
+          fi
+
+          APP_DIR=$(dirname "$APP_PATH")
+          APP_NAME=$(basename "$APP_PATH")
+          ZIP_NAME="启航-AI-编程助手-${VERSION}-macOS.app.zip"
+
+          cd "$APP_DIR"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_NAME" "$ZIP_NAME"
+          mv "$ZIP_NAME" "$GITHUB_WORKSPACE/dist-artifacts/"
+          echo "macOS app packaged: $ZIP_NAME"
+
+      - name: Upload macOS app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-app
+          path: dist-artifacts/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish Release Assets
+    runs-on: ubuntu-22.04
+    needs:
+      - build-windows-setup
+      - build-macos-app
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Windows setup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-setup
+          path: release-assets
+
+      - name: Download macOS app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-app
+          path: release-assets
+
+      - name: List release assets
+        shell: bash
+        run: ls -la release-assets
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 启航 AI 编程助手 ${{ github.ref_name }}
+          prerelease: true
+          body: |
+            ## 启航 AI 编程助手 ${{ github.ref_name }}
+
+            本次发布仅包含桌面端两个安装产物：
+
+            - Windows 安装程序：`*-Windows-Setup.exe`
+            - macOS App：`*-macOS.app.zip`
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
